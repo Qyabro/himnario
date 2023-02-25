@@ -15,7 +15,7 @@ def index():
 
 
 #Consulta Version de BD:
-@app.route('/versiondb') 
+@app.route('/versiondb', methods=['GET']) 
 def versionDb():
     try:
         cursor = conexion.connection.cursor()
@@ -29,7 +29,8 @@ def versionDb():
 
 
 #Lista de todos los autores:
-@app.route('/autores')
+"""
+@app.route('/autores', methods=['GET'])
 def consulta_autores():
     try:
         cursor = conexion.connection.cursor()
@@ -43,7 +44,33 @@ def consulta_autores():
         return jsonify({'autores':autores,'mensaje':"ok"})        
     except Exception as ex:
         return jsonify({'mensaje':"Error"})
+"""
 
+#Lista autores con limite y pagina:
+@app.route('/autores', methods=['GET'])
+def consulta_autores_limite():
+    try:
+        args = request.args
+        pagina = args.get('page', type=int)
+        limite = args.get('limit', type=int)        
+
+        if limite == None or pagina == None:
+            sentencia = "SELECT * FROM lista_autores;"
+        else:
+            offset = (pagina * limite)-limite
+            sentencia = "SELECT * FROM lista_autores LIMIT {0} OFFSET {1};".format(limite,offset)
+        print(sentencia)
+        cursor = conexion.connection.cursor()
+        cursor.execute(sentencia)
+        datos=cursor.fetchall()
+        autores=[]
+        for fila in datos:
+            autor={'id':fila[0],'nombre':fila[1]}
+            autores.append(autor)
+        return jsonify({'autores':autores,'mensaje':"ok"})        
+    except Exception as ex:
+        return jsonify({'mensaje':"Error"})
+    
 
 #Informacion de un autor especifico:
 @app.route('/autores/<id>', methods=['GET'])
@@ -109,7 +136,13 @@ def eliminar_autor(id):
         return jsonify({'mensaje':"Error"})
 
 
-#Manejador de errores cuando se intenta ingresar a una pagina que no existe:
+
+
+
+
+
+
+#Manejo de errores cuando se intenta ingresar a una pagina que no existe:
 def pagina_no_Encontrada(error):
     return "<h1 style='color: white;background-color:red;'>La pagina que intentas buscar no existe!</h1>", 404 #Se agrega el codigo de error 404
 
