@@ -46,6 +46,7 @@ def consulta_autores():
         return jsonify({'mensaje':"Error"})
 """
 
+
 #Lista autores con limite y pagina:
 @app.route('/autores', methods=['GET'])
 def consulta_autores_limite():
@@ -136,11 +137,94 @@ def eliminar_autor(id):
         return jsonify({'mensaje':"Error"})
 
 
+#Lista categorias con limite y pagina:
+@app.route('/categorias', methods=['GET'])
+def consulta_categorias():
+    try:
+        args = request.args
+        pagina = args.get('page', type=int)
+        limite = args.get('limit', type=int)        
+
+        if limite == None or pagina == None:
+            sentencia = "SELECT * FROM lista_categorias;"
+        else:
+            offset = (pagina * limite)-limite
+            sentencia = "SELECT * FROM lista_categorias LIMIT {0} OFFSET {1};".format(limite,offset)
+        print(sentencia)
+        cursor = conexion.connection.cursor()
+        cursor.execute(sentencia)
+        datos=cursor.fetchall()
+        categorias=[]
+        for fila in datos:
+            categoria={'id':fila[0],'nombre':fila[1]}
+            categorias.append(categoria)
+        return jsonify({'categorias':categorias,'mensaje':"ok"})        
+    except Exception as ex:
+        return jsonify({'mensaje':"Error"})
+    
+
+#Informacion de un categoria especifico:
+@app.route('/categorias/<id>', methods=['GET'])
+def categoria_especifica(id):
+    try:
+        cursor = conexion.connection.cursor()
+        sentencia = "SELECT * FROM lista_categorias WHERE id_categoria={0};".format(id)
+        print(sentencia)
+        cursor.execute(sentencia)
+        datos=cursor.fetchone()
+        if datos != None:   #Si no esta en null el campo
+            infoCategoria = {'id':datos[0],'nombre':datos[1]}
+            return jsonify({'infoCategoria':infoCategoria,'mensaje':"ok"}) 
+        else:
+            return jsonify({'mensaje':"Categoria no encontrado"})       
+    except Exception as ex:
+        return jsonify({'mensaje':"Error"})
 
 
+#Crear categoria:
+@app.route('/categorias', methods=['POST'])
+def registrar_categoria():
+    try:
+        #print(request.json)
+        cursor = conexion.connection.cursor()
+        sentencia = "INSERT INTO lista_categorias (categoria) VALUES ('{0}');".format(request.json['categoria'])
+        #print(sentencia)
+        cursor.execute(sentencia)
+        conexion.connection.commit()    #Confirma la accion de insertar dato
+        return jsonify({'mensaje':"ok"})        
+    except Exception as ex:
+        return jsonify({'mensaje':"Error"})
 
 
+#Editar categoria:
+@app.route('/categorias/<id>', methods=['PUT'])
+def editar_categoria(id):
+    try:
+        #print(request.json)
+        cursor = conexion.connection.cursor()
+        sentencia = """UPDATE lista_categorias SET 
+        categoria = '{0}'
+        WHERE 
+        id_categoria='{1}';""".format(request.json['categoria'],id)
+        print(sentencia)
+        cursor.execute(sentencia)
+        conexion.connection.commit()    #Confirma la accion de insertar dato
+        return jsonify({'mensaje':"ok"})        
+    except Exception as ex:
+        return jsonify({'mensaje':"Error"})
 
+
+#Eliminar categoria:
+@app.route('/categorias/<id>', methods=['DELETE'])
+def eliminar_categoria(id):
+    try:
+        cursor = conexion.connection.cursor()
+        sentencia = "DELETE FROM lista_categorias WHERE id_categoria={0};".format(id)
+        cursor.execute(sentencia)
+        conexion.connection.commit()    #Confirma la accion de insertar dato
+        return jsonify({'mensaje':"ok"})        
+    except Exception as ex:
+        return jsonify({'mensaje':"Error"})
 
 #Manejo de errores cuando se intenta ingresar a una pagina que no existe:
 def pagina_no_Encontrada(error):
