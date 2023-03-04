@@ -11,7 +11,7 @@ conexion = MySQL(app)   #Se establece una conexion a MySQL
 #Home
 @app.route('/')
 def index():
-    return "<h1 style='color: white; background-color:black;'>HOME API HIMNARIO</h1>"
+    return "<h1 style='color: white; background-color:violet;'>HOME API HIMNARIO</h1>"
 
 
 #Consulta Version de BD:
@@ -62,6 +62,7 @@ def consulta_autores_limite():
             sentencia = "SELECT * FROM lista_autores LIMIT {0} OFFSET {1};".format(limite,offset)
         print(sentencia)
         cursor = conexion.connection.cursor()
+        
         cursor.execute(sentencia)
         datos=cursor.fetchall()
         autores=[]
@@ -225,6 +226,197 @@ def eliminar_categoria(id):
         return jsonify({'mensaje':"ok"})        
     except Exception as ex:
         return jsonify({'mensaje':"Error"})
+
+
+#Lista paginas con limite y pagina:
+@app.route('/paginas', methods=['GET'])
+def consulta_paginas():
+    try:
+        args = request.args
+        pagina = args.get('page', type=int)
+        limite = args.get('limit', type=int)        
+
+        if limite == None or pagina == None:
+            sentencia = "SELECT * FROM lista_paginas;"
+        else:
+            offset = (pagina * limite)-limite
+            sentencia = "SELECT * FROM lista_paginas LIMIT {0} OFFSET {1};".format(limite,offset)
+        print(sentencia)
+        cursor = conexion.connection.cursor()
+        cursor.execute(sentencia)
+        datos=cursor.fetchall()
+        paginas=[]
+        for fila in datos:
+            pagina={'id':fila[0],'pagina':fila[1]}
+            paginas.append(pagina)
+        return jsonify({'paginas':paginas,'mensaje':"ok"})        
+    except Exception as ex:
+        return jsonify({'mensaje':"Error"})
+    
+
+#Informacion de un pagina especifico:
+@app.route('/paginas/<id>', methods=['GET'])
+def pagina_especifica(id):
+    try:
+        cursor = conexion.connection.cursor()
+        sentencia = "SELECT * FROM lista_paginas WHERE id_pagina={0};".format(id)
+        print(sentencia)
+        cursor.execute(sentencia)
+        datos=cursor.fetchone()
+        if datos != None:   #Si no esta en null el campo
+            infoPagina = {'id':datos[0],'pagina':datos[1]}
+            return jsonify({'infoPagina':infoPagina,'mensaje':"ok"}) 
+        else:
+            return jsonify({'mensaje':"Pagina no encontrada"})       
+    except Exception as ex:
+        return jsonify({'mensaje':"Error"})
+
+
+#Crear pagina:
+@app.route('/paginas', methods=['POST'])
+def registrar_pagina():
+    try:
+        #print(request.json)
+        cursor = conexion.connection.cursor()
+        sentencia = "INSERT INTO lista_paginas (num_pagina) VALUES ('{0}');".format(request.json['num_pagina'])
+        #print(sentencia)
+        cursor.execute(sentencia)
+        conexion.connection.commit()    #Confirma la accion de insertar dato
+        return jsonify({'mensaje':"ok"})        
+    except Exception as ex:
+        return jsonify({'mensaje':"Error"})
+
+
+#Editar pagina:
+@app.route('/paginas/<id>', methods=['PUT'])
+def editar_pagina(id):
+    try:
+        #print(request.json)
+        cursor = conexion.connection.cursor()
+        sentencia = """UPDATE lista_paginas SET 
+        num_pagina = '{0}'
+        WHERE 
+        id_pagina='{1}';""".format(request.json['num_pagina'],id)
+        print(sentencia)
+        cursor.execute(sentencia)
+        conexion.connection.commit()    #Confirma la accion de insertar dato
+        return jsonify({'mensaje':"ok"})        
+    except Exception as ex:
+        return jsonify({'mensaje':"Error"})
+
+
+#Eliminar pagina:
+@app.route('/paginas/<id>', methods=['DELETE'])
+def eliminar_pagina(id):
+    try:
+        cursor = conexion.connection.cursor()
+        sentencia = "DELETE FROM lista_paginas WHERE id_pagina={0};".format(id)
+        cursor.execute(sentencia)
+        conexion.connection.commit()    #Confirma la accion de insertar dato
+        return jsonify({'mensaje':"ok"})        
+    except Exception as ex:
+        return jsonify({'mensaje':"Error"})
+
+
+#Lista himnos con limite y pagina:
+@app.route('/himnos', methods=['GET'])
+def consulta_himnos():
+    try:
+        args = request.args
+        pag = args.get('page', type=int)
+        limite = args.get('limit', type=int)        
+
+        if limite == None or pag == None:
+            sentencia = "SELECT * FROM lista_himnos;"
+        else:
+            offset = (pag * limite)-limite
+            sentencia = "SELECT * FROM lista_himnos LIMIT {0} OFFSET {1};".format(limite,offset)
+        print(sentencia)
+        cursor = conexion.connection.cursor()
+        cursor.execute(sentencia)
+        datos=cursor.fetchall()
+        himnos=[]
+        for fila in datos:
+            himno={'id':fila[0],'num':fila[1],'titulo':fila[2],'categoria':fila[3],'autor':fila[4],'pag':fila[5]}
+            himnos.append(himno)
+        return jsonify({'himnos':himnos,'mensaje':"ok"})        
+    except Exception as ex:
+        return jsonify({'mensaje':"Error"})
+    
+
+#Informacion de un himno especifico:
+@app.route('/himnos/<id>', methods=['GET'])
+def himno_especifica(id):
+    try:
+        cursor = conexion.connection.cursor()
+        sentencia = "SELECT * FROM lista_himnos WHERE id_himno={0};".format(id)
+        print(sentencia)
+        cursor.execute(sentencia)
+        datos=cursor.fetchone()
+        if datos != None:   #Si no esta en null el campo
+            infoHimno = {'id':datos[0],'num':datos[1],'titulo':datos[2],'categoria':datos[3],'autor':datos[4],'pag':datos[5]}
+            return jsonify({'infoHimno':infoHimno,'mensaje':"ok"}) 
+        else:
+            return jsonify({'mensaje':"Himno no encontrada"})       
+    except Exception as ex:
+        return jsonify({'mensaje':"Error"})
+
+
+#Crear himno:
+@app.route('/himnos', methods=['POST'])
+def registrar_himno():
+    try:
+        #print(request.json)
+        cursor = conexion.connection.cursor()
+        #sentencia = "INSERT INTO lista_himnos (num_himno) VALUES ('{0}');".format(request.json['num_himno'])
+        sentencia="""INSERT INTO himnos (num_himno,titulo,letra,fk_pagina,fk_categoria,fecha) 
+        VALUES ({0},'{1}','{2}',
+        (SELECT id_pagina FROM lista_paginas WHERE num_pagina={3}),
+        (SELECT id_categoria FROM lista_categorias WHERE categoria='{4}'),'{5}'
+        );""".format(request.json['num_himno'],request.json['titulo'],request.json['letra'],
+        request.json['num_pagina'],request.json['categoria'],request.json['fecha'])
+        
+        
+        print(sentencia)
+        cursor.execute(sentencia)
+        conexion.connection.commit()    #Confirma la accion de insertar dato
+        return jsonify({'mensaje':"ok"})        
+    except Exception as ex:
+        return jsonify({'mensaje':"Error"})
+
+
+#Editar himno:
+@app.route('/himnos/<id>', methods=['PUT'])
+def editar_himno(id):
+    try:
+        #print(request.json)
+        cursor = conexion.connection.cursor()
+        sentencia = """UPDATE lista_himnos SET 
+        num_himno = '{0}'
+        WHERE 
+        id_himno='{1}';""".format(request.json['num_himno'],id)
+        print(sentencia)
+        cursor.execute(sentencia)
+        conexion.connection.commit()    #Confirma la accion de insertar dato
+        return jsonify({'mensaje':"ok"})        
+    except Exception as ex:
+        return jsonify({'mensaje':"Error"})
+
+
+#Eliminar himno:
+@app.route('/himnos/<id>', methods=['DELETE'])
+def eliminar_himno(id):
+    try:
+        cursor = conexion.connection.cursor()
+        sentencia = "DELETE FROM lista_himnos WHERE id_himno={0};".format(id)
+        cursor.execute(sentencia)
+        conexion.connection.commit()    #Confirma la accion de insertar dato
+        return jsonify({'mensaje':"ok"})        
+    except Exception as ex:
+        return jsonify({'mensaje':"Error"})
+
+
+
 
 #Manejo de errores cuando se intenta ingresar a una pagina que no existe:
 def pagina_no_Encontrada(error):
