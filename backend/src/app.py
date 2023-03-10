@@ -44,9 +44,11 @@ def consulta_autores():
     except Exception as ex:
         return jsonify({'mensaje':"Error"})
 
+
 #Manejador de errores cuando se intenta ingresar a una pagina que no existe:
 def pagina_no_Encontrada(error):
     return "<h1 style='color: white;background-color:red;'>La pagina que intentas buscar no existe!</h1>", 404 #Se agrega el codigo de error 404
+
 
 def prueba():
     print("prueba")

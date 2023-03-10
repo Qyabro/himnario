@@ -1,0 +1,3 @@
+# Este archivo permite ignorar archivos en GIT, como contraseñas, imagenes, etc
+*.pyc
+config.py
