@@ -1,2 +1,7 @@
 # Este archivo permite ignorar archivos en GIT, como contraseñas, imagenes, etc
-*.pyc
+
+#ignora la carpeta  __pycache__
+__pycache__
+
+#ignora la carpeta  env
+env

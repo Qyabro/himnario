@@ -9,7 +9,6 @@ class DevelopmentConfig():
     MYSQL_PASSWORD = 'root'
     MYSQL_DB = 'himnario'
     
-
 config = {
     'development': DevelopmentConfig
 }
