@@ -29,8 +29,10 @@ def versionDb():
 
 
 #Lista de todos los autores:
+
 """
 @app.route('/autores', methods=['GET'])
+
 def consulta_autores():
     try:
         cursor = conexion.connection.cursor()
@@ -44,6 +46,7 @@ def consulta_autores():
         return jsonify({'autores':autores,'mensaje':"ok"})        
     except Exception as ex:
         return jsonify({'mensaje':"Error"})
+<<<<<<< HEAD
 """
 
 
@@ -418,9 +421,13 @@ def eliminar_himno(id):
 
 
 #Manejo de errores cuando se intenta ingresar a una pagina que no existe:
+
 def pagina_no_Encontrada(error):
     return "<h1 style='color: white;background-color:red;'>La pagina que intentas buscar no existe!</h1>", 404 #Se agrega el codigo de error 404
 
+
+def prueba():
+    print("prueba")
 
 if __name__ == '__main__':  #Comprueba que este corriendo la app como principal (no siendo invocada por otra app)
     app.config.from_object(config['development']) #Debug se usa para que el servidor se reinicie cada vez que se hace un cambio (No se recomienda dejarlo activo para produccion)
